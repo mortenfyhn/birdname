@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Fast offline bird-name lookup across European languages.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <title>birdnames</title>
+  <style>
+    :root {
+      --surface: #fff;
+      --on-surface: #1C2624;
+      --on-surface-variant: #6B7A76;
+      --outline: #CBD3D0;
+      --outline-faint: rgba(203, 211, 208, .4);
+      --primary: #5B7A2B;
+      --primary-dark: #41591D;
+      --primary-container: #DCE8C6;
+      font-family: system-ui, sans-serif;
+      color: var(--on-surface);
+      background: var(--surface);
+      font-synthesis: none;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: var(--surface); font-size: 16px; }
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--outline-faint);
+      position: sticky; top: 0; z-index: 1;
+      padding-top: env(safe-area-inset-top);
+    }
+    .bar {
+      display: flex; align-items: center; gap: 8px;
+      width: 100%; max-width: 560px; margin: 0 auto; padding: 4px 16px;
+    }
+    #q {
+      flex: 1; min-width: 0; font: inherit; font-size: 17px;
+      padding: 6px 2px; background: none; color: var(--on-surface);
+      border: 0; outline: 0; caret-color: var(--primary);
+    }
+    #q::placeholder { color: var(--on-surface-variant); }
+    #q::-webkit-search-cancel-button, #q::-webkit-search-decoration { -webkit-appearance: none; appearance: none; }
+    #clear, #languages-button {
+      display: flex; flex: 0 0 auto; align-items: center; justify-content: center;
+      border: 0; background: none; cursor: pointer; color: var(--on-surface-variant);
+    }
+    #clear { width: 32px; height: 36px; padding: 0; font-size: 22px; line-height: 1; visibility: hidden; }
+    #clear.show { visibility: visible; }
+    #languages-button { width: 48px; height: 44px; padding: 4px; }
+    #languages-button img { display: block; width: 36px; height: 36px; }
+    main { background: var(--surface); padding-bottom: env(safe-area-inset-bottom); }
+    .bird { border-bottom: 1px solid var(--outline-faint); }
+    .bird-inner { max-width: 560px; margin: 0 auto; padding: 5px 16px 7px; }
+    .row { display: flex; align-items: baseline; gap: 10px; padding: 2px 0; }
+    .lang { flex: 0 0 36px; text-align: right; }
+    .lang span {
+      display: inline-block; border-radius: 6px; padding: 1px 6px;
+      background: #EEF1F0; color: var(--on-surface-variant);
+      font-size: 12px; font-weight: 600; letter-spacing: .03em; line-height: 16px;
+    }
+    .name { min-width: 0; font-size: 16px; overflow-wrap: anywhere; }
+    .scientific { font-style: italic; }
+    .matched { font-weight: 700; }
+    mark { background: var(--primary-container); color: var(--primary-dark); font-weight: 700; border-radius: 3px; padding: 0 1px; }
+    #settings { display: none; max-width: 560px; margin: 0 auto; padding: 0 16px 24px; }
+    #settings.open { display: block; }
+    .hint { color: var(--on-surface-variant); font-size: 14px; margin: 12px 0; }
+    .langlist { list-style: none; margin: 0; padding: 0; }
+    .langlist li {
+      display: flex; align-items: center; gap: 12px; min-height: 46px;
+      padding: 8px 4px; border-bottom: 1px solid var(--outline-faint); cursor: pointer;
+    }
+    .langlist input { width: 18px; height: 18px; margin: 0; accent-color: var(--primary); }
+    .langlist .code { width: 36px; text-align: right; font-size: 12px; font-weight: 600; color: var(--on-surface-variant); }
+    .langlist .label { color: var(--on-surface); }
+    .attribution { margin: 18px 0 0; color: var(--on-surface-variant); font-size: 12px; line-height: 1.5; }
+    .attribution a { color: var(--primary-dark); }
+    @media (min-width: 700px) {
+      .bar { padding-left: 20px; padding-right: 20px; }
+      .bird-inner { padding-left: 20px; padding-right: 20px; }
+      #settings { padding-left: 20px; padding-right: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="bar">
+      <input id="q" type="search" placeholder="Search" autocomplete="off" autocapitalize="none" spellcheck="false" autofocus aria-label="Search bird names">
+      <button id="clear" type="button" title="Clear" aria-label="Clear search">×</button>
+      <button id="languages-button" type="button" title="Languages" aria-label="Choose languages" aria-pressed="false">
+        <img src="language-icon.svg" alt="">
+      </button>
+    </div>
+  </header>
+  <main id="results" aria-live="polite"></main>
+  <section id="settings" aria-label="Languages">
+    <p class="hint">Languages</p>
+    <ul class="langlist" id="langlist"></ul>
+    <p class="attribution">
+      Names and taxonomy: <a href="https://www.worldbirdnames.org/" target="_blank" rel="noreferrer">IOC World Bird List 15.2</a>,
+      edited by Frank Gill, David Donsker and Pamela Rasmussen, licensed under
+      <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noreferrer">CC BY 3.0</a>.
+      Europe checklist: <a href="https://en.wikipedia.org/wiki/List_of_birds_of_Europe" target="_blank" rel="noreferrer">List of birds of Europe</a>,
+      licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noreferrer">CC BY-SA 4.0</a>.
+      Norwegian name corrections are cross-checked against <a href="https://artsdatabanken.no/" target="_blank" rel="noreferrer">Artsdatabanken</a>.
+    </p>
+  </section>
+  <script src="app.js" defer></script>
+</body>
+</html>
