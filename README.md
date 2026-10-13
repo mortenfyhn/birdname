@@ -1,4 +1,4 @@
-# Birdnames
+# Birdname
 
 A fast, offline-capable lookup for bird names in European languages. Type a name in any enabled language; each result shows the bird's names in the selected languages.
 
@@ -14,7 +14,7 @@ Open <http://localhost:8899/>. The service worker caches the app and data for of
 
 ## Deploy
 
-The site is plain static files with no build step. It is published with GitHub Pages at <https://fyhn.lol/birdnames/>; the `CNAME` file sets the custom domain.
+The site is plain static files with no build step. It is published with GitHub Pages at <https://birdname.fyhn.lol/>; the `CNAME` file sets the custom domain.
 
 ## Data
 

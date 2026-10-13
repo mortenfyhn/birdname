@@ -1,4 +1,4 @@
-const CACHE = "birdnames-v5";
+const CACHE = "birdname-v1";
 const FILES = [
   "./", "./index.html", "./app.js", "./data/birds.json",
   "./language-icon.svg", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png",

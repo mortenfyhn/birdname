@@ -1,6 +1,6 @@
 {
-  "name": "Birdnames",
-  "short_name": "Birdnames",
+  "name": "Birdname",
+  "short_name": "Birdname",
   "description": "Fast offline bird-name lookup across European languages.",
   "start_url": "./",
   "scope": "./",
