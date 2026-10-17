@@ -68,7 +68,13 @@
     #languages-button { width: 48px; height: 44px; padding: 4px; }
     #languages-button img { display: block; width: 36px; height: 36px; }
     main { background: var(--surface); padding-bottom: env(safe-area-inset-bottom); }
-    .bird { border-bottom: 1px solid var(--outline-faint); }
+    /* A broad query can match all ~900 birds. Skipping offscreen rows keeps each
+       keystroke fast; browsers without support just render the whole list. */
+    .bird {
+      border-bottom: 1px solid var(--outline-faint);
+      content-visibility: auto;
+      contain-intrinsic-size: auto 120px;
+    }
     .bird-inner { max-width: 560px; margin: 0 auto; padding: 5px 16px 7px; }
     .row { display: flex; align-items: baseline; gap: 10px; padding: 2px 0; }
     .lang { flex: 0 0 36px; text-align: right; }

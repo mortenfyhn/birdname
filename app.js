@@ -114,9 +114,7 @@ function rank(query) {
     if (!tier) continue;
     const score = tier[0] * tier[1];
     const previous = bestBySpecies.get(candidate.bird.scientific);
-    if (!previous || score > previous.score) {
-      bestBySpecies.set(candidate.bird.scientific, { ...candidate, score, tier: tier[0] });
-    }
+    if (!previous || score > previous.score) bestBySpecies.set(candidate.bird.scientific, { ...candidate, score });
   }
   return [...bestBySpecies.values()].sort((a, b) => b.score - a.score || a.bird.scientific.localeCompare(b.bird.scientific));
 }
@@ -162,14 +160,8 @@ function renderResults() {
   const selected = data.languages.filter(language => enabled.has(language.code));
   if (enabled.has("sci")) selected.unshift(SCIENTIFIC);
   const query = q.value;
-  // One tier below the best hit: a strong prefix match should not hide the
-  // suffix matches just underneath it. Two characters is the minimum where
-  // that still produces a list worth reading.
   const hits = rank(query);
-  const shown = fold(query).length < 2 || !hits.length
-    ? []
-    : hits.filter(hit => hit.tier >= hits[0].tier / 10);
-  results.innerHTML = shown.map(hit => {
+  results.innerHTML = hits.map(hit => {
     const rows = selected.map(language => {
       const name = language.code === "sci" ? hit.bird.scientific : hit.bird.names[language.code];
       if (!name) return "";
@@ -182,8 +174,7 @@ function renderResults() {
     }).join("");
     return `<article class="bird"><div class="bird-inner">${rows}</div></article>`;
   }).join("");
-  if (!shown.length && fold(query).length < 2) results.innerHTML = '<p class="hint">Keep typing…</p>';
-  else if (!shown.length) results.innerHTML = '<p class="hint">No matches.</p>';
+  if (!hits.length) results.innerHTML = '<p class="hint">No matches.</p>';
 }
 
 function renderLanguages() {
