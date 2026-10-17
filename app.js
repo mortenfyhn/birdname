@@ -232,6 +232,13 @@ async function start() {
   updateClearButton();
   renderResults();
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+  // First visit: open the picker so the app starts usable.
+  let firstRun = false;
+  try { firstRun = !localStorage.getItem(STORAGE_KEY); } catch {}
+  if (firstRun) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...enabled])); } catch {}
+    setLanguagesOpen(true);
+  }
 }
 
 start().catch(error => {
