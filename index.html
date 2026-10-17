@@ -67,6 +67,34 @@
     #clear.show { visibility: visible; }
     #languages-button { width: 48px; height: 44px; padding: 4px; }
     #languages-button img { display: block; width: 36px; height: 36px; }
+    #install-banner { background: var(--primary-container); }
+    #install-banner[hidden] { display: none; }
+    .install-inner {
+      display: flex; align-items: center; gap: 12px;
+      max-width: 560px; margin: 0 auto; padding: 6px 16px;
+    }
+    .install-inner p { flex: 1; margin: 0; font-size: 14px; line-height: 1.35; }
+    #install-button {
+      flex: 0 0 auto; padding: 5px 12px; border: 0; border-radius: 6px;
+      background: var(--primary); color: #fff; font: inherit; font-size: 14px; cursor: pointer;
+    }
+    #install-dismiss {
+      flex: 0 0 auto; width: 30px; height: 30px; padding: 0; border: 0;
+      background: none; color: var(--primary-dark); font-size: 20px; line-height: 1; cursor: pointer;
+    }
+    #install-dialog {
+      width: min(360px, calc(100vw - 32px)); padding: 20px;
+      border: 1px solid var(--outline); border-radius: 12px;
+      color: var(--on-surface); background: var(--surface);
+    }
+    #install-dialog::backdrop { background: rgba(20, 30, 27, .35); }
+    #install-dialog h2 { margin: 0 0 8px; font-size: 18px; }
+    #install-dialog p { margin: 0 0 18px; line-height: 1.45; }
+    #install-close {
+      display: block; margin-left: auto; padding: 8px 14px;
+      border: 0; border-radius: 6px; background: var(--primary); color: white;
+      font: inherit; cursor: pointer;
+    }
     main { background: var(--surface); padding-bottom: env(safe-area-inset-bottom); }
     /* A broad query can match all ~900 birds. Skipping offscreen rows keeps each
        keystroke fast; browsers without support just render the whole list. */
@@ -119,7 +147,19 @@
       </button>
     </div>
   </header>
+  <div id="install-banner" hidden>
+    <div class="install-inner">
+      <p>Install Birdname for quick, offline access.</p>
+      <button id="install-button" type="button">Install</button>
+      <button id="install-dismiss" type="button" aria-label="Dismiss install suggestion">×</button>
+    </div>
+  </div>
   <main id="results" aria-live="polite"></main>
+  <dialog id="install-dialog" aria-labelledby="install-title">
+    <h2 id="install-title">Install Birdname</h2>
+    <p id="install-instructions"></p>
+    <button id="install-close" type="button">Got it</button>
+  </dialog>
   <section id="settings" aria-label="Languages">
     <ul class="langlist" id="langlist"></ul>
     <p class="attribution">

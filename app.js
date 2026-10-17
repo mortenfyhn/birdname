@@ -13,13 +13,85 @@ const langList = document.querySelector("#langlist");
 const clearButton = document.querySelector("#clear");
 const languagesButton = document.querySelector("#languages-button");
 const searchBox = document.querySelector(".searchbox");
+const installBanner = document.querySelector("#install-banner");
+const installButton = document.querySelector("#install-button");
+const installDialog = document.querySelector("#install-dialog");
+const installInstructions = document.querySelector("#install-instructions");
 
+let deferredInstallPrompt = null;
+let appInstalled = false;
 let data;
 let enabled;
 let aliases = [];
 let activeAliases = [];
 let queryBeforePicker = "";
 let renderGeneration = 0;
+
+function isInstalled() {
+  return window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+}
+
+function isIos() {
+  return /iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+}
+
+function isAndroid() {
+  return /Android/i.test(navigator.userAgent);
+}
+
+function showInstallHelp() {
+  const android = isAndroid();
+  installInstructions.textContent = isIos()
+    ? "Open Birdname in Safari, tap Share, then Add to Home Screen."
+    : android
+      ? "Open the browser menu (⋮), then choose Install app or Add to Home screen."
+      : "Choose Install Birdname from your browser’s address bar or menu.";
+  installDialog.showModal();
+}
+
+// Offer the banner where install is available through a browser prompt or menu.
+function installDismissed() {
+  try { return localStorage.getItem("bn-install-dismissed") === "1"; } catch { return false; }
+}
+
+function updateInstallButton() {
+  installBanner.hidden = appInstalled || isInstalled() || installDismissed() || !(deferredInstallPrompt || isIos() || isAndroid());
+}
+
+updateInstallButton();
+window.addEventListener("beforeinstallprompt", event => {
+  event.preventDefault();
+  deferredInstallPrompt = event;
+  updateInstallButton();
+});
+window.addEventListener("appinstalled", () => {
+  deferredInstallPrompt = null;
+  appInstalled = true;
+  updateInstallButton();
+});
+installButton.addEventListener("click", async () => {
+  if (!deferredInstallPrompt) {
+    showInstallHelp();
+    return;
+  }
+  const prompt = deferredInstallPrompt;
+  deferredInstallPrompt = null;
+  try {
+    await prompt.prompt();
+    const { outcome } = await prompt.userChoice;
+    if (outcome === "accepted") appInstalled = true;
+    updateInstallButton();
+    if (outcome !== "accepted") showInstallHelp();
+  } catch {
+    showInstallHelp();
+  }
+});
+document.querySelector("#install-close").addEventListener("click", () => installDialog.close());
+document.querySelector("#install-dismiss").addEventListener("click", () => {
+  try { localStorage.setItem("bn-install-dismissed", "1"); } catch {}
+  updateInstallButton();
+});
 
 function loadEnabled() {
   try {
