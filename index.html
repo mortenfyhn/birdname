@@ -20,6 +20,7 @@
       --primary: #5B7A2B;
       --primary-dark: #41591D;
       --primary-container: #DCE8C6;
+      --lang-icon: 48px;
       font-family: system-ui, sans-serif;
       color: var(--on-surface);
       background: var(--surface);
@@ -65,8 +66,9 @@
     }
     #clear { width: 30px; height: 34px; padding: 0; font-size: 22px; line-height: 1; visibility: hidden; }
     #clear.show { visibility: visible; }
-    #languages-button { width: 48px; height: 44px; padding: 4px; }
-    #languages-button img { display: block; width: 36px; height: 36px; }
+    /* Icon size knob: adjust --lang-icon to resize the language button artwork. */
+    #languages-button { width: calc(var(--lang-icon) + 12px); height: 44px; padding: 4px; }
+    #languages-button img { display: block; width: var(--lang-icon); height: var(--lang-icon); }
     #install-banner { background: var(--primary-container); }
     #install-banner[hidden] { display: none; }
     .install-inner {
