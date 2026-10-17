@@ -1,4 +1,4 @@
-const CACHE = "birdname-v18";
+const CACHE = "birdname-v19";
 const FILES = [
   "./", "./index.html", "./app.js", "./data/birds.json",
   "./language-icon.svg", "./favicon.svg", "./favicon-32.png", "./apple-touch-icon.png",

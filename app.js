@@ -214,6 +214,15 @@ function setLanguagesOpen(open) {
 }
 
 languagesButton.addEventListener("click", () => setLanguagesOpen(!settings.classList.contains("open")));
+// Tap the greyed-out field to leave the picker and type right away; the saved
+// query comes back selected so typing overwrites it.
+searchBox.addEventListener("pointerdown", event => {
+  if (!settings.classList.contains("open")) return;
+  event.preventDefault();
+  setLanguagesOpen(false);
+  q.focus();
+  q.select();
+});
 q.addEventListener("input", () => { updateClearButton(); renderResults(); });
 clearButton.addEventListener("click", () => {
   q.value = "";

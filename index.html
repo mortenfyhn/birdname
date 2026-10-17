@@ -46,9 +46,11 @@
       border-radius: 8px; background: var(--surface);
     }
     .searchbox:focus-within { border-color: var(--primary); }
-    /* Picker mode: the field is disabled and visibly inert. */
-    .searchbox.picker-mode { opacity: .45; }
+    /* Picker mode: the field is disabled and visibly inert, but tapping it
+       closes the picker and puts the caret back in the field. */
+    .searchbox.picker-mode { opacity: .45; cursor: text; }
     .searchbox.picker-mode .search-icon { color: var(--outline); }
+    .searchbox.picker-mode #q { pointer-events: none; }
     .searchbox.picker-mode #clear { visibility: hidden !important; }
     .search-icon { flex: 0 0 auto; width: 18px; height: 18px; color: var(--on-surface-variant); }
     #q {
