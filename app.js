@@ -12,6 +12,7 @@ const settings = document.querySelector("#settings");
 const langList = document.querySelector("#langlist");
 const clearButton = document.querySelector("#clear");
 const languagesButton = document.querySelector("#languages-button");
+const searchBox = document.querySelector(".searchbox");
 
 let data;
 let enabled;
@@ -177,15 +178,12 @@ function renderResults() {
 }
 
 function renderLanguages() {
-  const filter = fold(q.value.trim());
-  const languages = [SCIENTIFIC, ...data.languages].filter(language =>
-    !filter || fold(language.label).includes(filter) || fold(language.short).includes(filter)
-  );
-  langList.innerHTML = languages.length ? languages.map(language => `
+  const languages = [SCIENTIFIC, ...data.languages];
+  langList.innerHTML = languages.map(language => `
     <li data-code="${language.code}">
       <input type="checkbox" ${enabled.has(language.code) ? "checked" : ""} tabindex="-1" aria-hidden="true">
       <span class="label">${escapeHtml(language.label)}</span>
-    </li>`).join("") : '<li class="empty">No languages found</li>';
+    </li>`).join("");
   langList.querySelectorAll("li[data-code]").forEach(row => {
     row.addEventListener("click", () => {
       const code = row.dataset.code;
@@ -201,31 +199,26 @@ function setLanguagesOpen(open) {
   if (open === wasOpen) return;
   if (open) {
     queryBeforePicker = q.value;
-    q.value = "";
   } else {
     q.value = queryBeforePicker;
     queryBeforePicker = "";
   }
   updateClearButton();
+  q.disabled = open;
+  searchBox.classList.toggle("picker-mode", open);
   settings.classList.toggle("open", open);
   results.hidden = open;
   languagesButton.setAttribute("aria-pressed", String(open));
-  q.setAttribute("aria-label", open ? "Filter languages" : "Search bird names");
-  if (open) renderLanguages();
-  else renderResults();
+  q.setAttribute("aria-label", open ? "Search bird names (language list open)" : "Search bird names");
+  if (!open) renderResults();
 }
 
 languagesButton.addEventListener("click", () => setLanguagesOpen(!settings.classList.contains("open")));
-q.addEventListener("input", () => {
-  updateClearButton();
-  if (settings.classList.contains("open")) renderLanguages();
-  else renderResults();
-});
+q.addEventListener("input", () => { updateClearButton(); renderResults(); });
 clearButton.addEventListener("click", () => {
   q.value = "";
   updateClearButton();
-  if (settings.classList.contains("open")) renderLanguages();
-  else renderResults();
+  renderResults();
   q.focus();
 });
 
