@@ -1,6 +1,6 @@
 const STORAGE_KEY = "bn-langs";
 const DEFAULT_LANGS = ["no", "fr", "en", "sci"];
-const SCIENTIFIC = { code: "sci", label: "Scientific name", short: "sci" };
+const SCIENTIFIC = { code: "sci", label: "Scientific", short: "sci" };
 const WEIGHTS = {
   exact: 100000, prefix: 10000, suffix: 2000, firstLetterSubseq: 1000,
   substring: 500, subseq: 100, typo: 20, completeness: 0.2,
@@ -180,7 +180,6 @@ function renderLanguages() {
   langList.innerHTML = languages.map(language => `
     <li data-code="${language.code}">
       <input type="checkbox" ${enabled.has(language.code) ? "checked" : ""} tabindex="-1" aria-hidden="true">
-      <span class="code">${escapeHtml(language.short)}</span>
       <span class="label">${escapeHtml(language.label)}</span>
     </li>`).join("");
   langList.querySelectorAll("li").forEach(row => {
