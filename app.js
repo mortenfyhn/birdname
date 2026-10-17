@@ -17,7 +17,9 @@ const searchBox = document.querySelector(".searchbox");
 let data;
 let enabled;
 let aliases = [];
+let activeAliases = [];
 let queryBeforePicker = "";
+let renderGeneration = 0;
 
 function loadEnabled() {
   try {
@@ -48,6 +50,7 @@ function prepareAliases() {
     }
     aliases.push({ bird, code: "sci", name: bird.scientific, folded: tight(bird.scientific) });
   }
+  activeAliases = aliases.filter(candidate => enabled.has(candidate.code));
 }
 
 function subsequenceSpan(query, text) {
@@ -62,28 +65,28 @@ function subsequenceSpan(query, text) {
   return qi === query.length ? end - start + 1 : -1;
 }
 
-function osaCapped(a, b, cap) {
+function osaCapped(a, b, cap, d, width) {
   if (Math.abs(a.length - b.length) > cap) return cap + 1;
-  const d = Array.from({ length: a.length + 1 }, () => new Int16Array(b.length + 1));
-  for (let i = 0; i <= a.length; i++) d[i][0] = i;
-  for (let j = 0; j <= b.length; j++) d[0][j] = j;
+  for (let i = 0; i <= a.length; i++) d[i * width] = i;
+  for (let j = 0; j <= b.length; j++) d[j] = j;
   for (let i = 1; i <= a.length; i++) {
     let rowMin = Infinity;
+    const row = i * width, previous = (i - 1) * width, beforePrevious = (i - 2) * width;
     for (let j = 1; j <= b.length; j++) {
       const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-      let value = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + cost);
+      let value = Math.min(d[previous + j] + 1, d[row + j - 1] + 1, d[previous + j - 1] + cost);
       if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
-        value = Math.min(value, d[i - 2][j - 2] + 1);
+        value = Math.min(value, d[beforePrevious + j - 2] + 1);
       }
-      d[i][j] = value;
+      d[row + j] = value;
       rowMin = Math.min(rowMin, value);
     }
     if (rowMin > cap) return cap + 1;
   }
-  return d[a.length][b.length] <= cap ? d[a.length][b.length] : cap + 1;
+  return d[a.length * width + b.length] <= cap ? d[a.length * width + b.length] : cap + 1;
 }
 
-function tierAndQuality(query, name) {
+function tierAndQuality(query, name, distanceMatrix, matrixWidth) {
   if (name === query) return [WEIGHTS.exact, 1];
   const completeness = (1 - WEIGHTS.completeness) + WEIGHTS.completeness * query.length / name.length;
   if (name.startsWith(query)) return [WEIGHTS.prefix, completeness];
@@ -96,8 +99,8 @@ function tierAndQuality(query, name) {
   if (query.length >= 4) {
     const cap = query.length <= 5 ? 1 : 2;
     const distance = Math.min(
-      osaCapped(query, name.slice(0, query.length), cap),
-      osaCapped(query, name.slice(0, query.length + cap), cap),
+      osaCapped(query, name.slice(0, query.length), cap, distanceMatrix, matrixWidth),
+      osaCapped(query, name.slice(0, query.length + cap), cap, distanceMatrix, matrixWidth),
     );
     if (distance <= cap) return [WEIGHTS.typo, 1 - distance / query.length];
   }
@@ -108,9 +111,13 @@ function rank(query) {
   const foldedQuery = tight(query);
   if (!foldedQuery) return [];
   const bestBySpecies = new Map();
-  for (const candidate of aliases) {
-    if (!enabled.has(candidate.code)) continue;
-    const tier = tierAndQuality(foldedQuery, candidate.folded);
+  const typoCap = foldedQuery.length <= 5 ? 1 : 2;
+  const matrixWidth = foldedQuery.length + typoCap + 1;
+  const distanceMatrix = foldedQuery.length >= 4
+    ? new Int16Array((foldedQuery.length + 1) * matrixWidth)
+    : null;
+  for (const candidate of activeAliases) {
+    const tier = tierAndQuality(foldedQuery, candidate.folded, distanceMatrix, matrixWidth);
     if (!tier) continue;
     const score = tier[0] * tier[1];
     const previous = bestBySpecies.get(candidate.bird.scientific);
@@ -152,6 +159,7 @@ function updateClearButton() {
 }
 
 function renderResults() {
+  const generation = ++renderGeneration;
   if (!q.value.trim()) {
     results.replaceChildren();
     return;
@@ -161,20 +169,32 @@ function renderResults() {
   if (enabled.has("sci")) selected.unshift(SCIENTIFIC);
   const query = q.value;
   const hits = rank(query);
-  results.innerHTML = hits.map(hit => {
-    const rows = selected.map(language => {
-      const name = language.code === "sci" ? hit.bird.scientific : hit.bird.names[language.code];
-      if (!name) return "";
-      const matched = language.code === hit.code;
-      const label = matched
-        ? `<span class="matched">${markedName(name, query)}</span>`
-        : escapeHtml(name);
-      const scientific = language.code === "sci" ? " scientific" : "";
-      return `<div class="row${scientific}"><span class="lang"><span>${language.short}</span></span><span class="name">${label}</span></div>`;
+  results.replaceChildren();
+  if (!hits.length) {
+    results.innerHTML = '<p class="hint">No matches.</p>';
+    return;
+  }
+  let offset = 0;
+  const appendBatch = () => {
+    if (generation !== renderGeneration) return;
+    const html = hits.slice(offset, offset + 20).map(hit => {
+      const rows = selected.map(language => {
+        const name = language.code === "sci" ? hit.bird.scientific : hit.bird.names[language.code];
+        if (!name) return "";
+        const matched = language.code === hit.code;
+        const label = matched
+          ? `<span class="matched">${markedName(name, query)}</span>`
+          : escapeHtml(name);
+        const scientific = language.code === "sci" ? " scientific" : "";
+        return `<div class="row${scientific}"><span class="lang"><span>${language.short}</span></span><span class="name">${label}</span></div>`;
+      }).join("");
+      return `<article class="bird"><div class="bird-inner">${rows}</div></article>`;
     }).join("");
-    return `<article class="bird"><div class="bird-inner">${rows}</div></article>`;
-  }).join("");
-  if (!hits.length) results.innerHTML = '<p class="hint">No matches.</p>';
+    results.insertAdjacentHTML("beforeend", html);
+    offset += 20;
+    if (offset < hits.length) requestAnimationFrame(appendBatch);
+  };
+  appendBatch();
 }
 
 function renderLanguages() {
@@ -188,6 +208,7 @@ function renderLanguages() {
     row.addEventListener("click", () => {
       const code = row.dataset.code;
       enabled.has(code) ? enabled.delete(code) : enabled.add(code);
+      activeAliases = aliases.filter(candidate => enabled.has(candidate.code));
       saveEnabled();
       renderLanguages();
     });
@@ -205,6 +226,7 @@ function setLanguagesOpen(open) {
   }
   updateClearButton();
   q.disabled = open;
+  if (open) renderGeneration++;
   searchBox.classList.toggle("picker-mode", open);
   settings.classList.toggle("open", open);
   results.hidden = open;
