@@ -114,7 +114,9 @@ function rank(query) {
     if (!tier) continue;
     const score = tier[0] * tier[1];
     const previous = bestBySpecies.get(candidate.bird.scientific);
-    if (!previous || score > previous.score) bestBySpecies.set(candidate.bird.scientific, { ...candidate, score });
+    if (!previous || score > previous.score) {
+      bestBySpecies.set(candidate.bird.scientific, { ...candidate, score, tier: tier[0] });
+    }
   }
   return [...bestBySpecies.values()].sort((a, b) => b.score - a.score || a.bird.scientific.localeCompare(b.bird.scientific));
 }
@@ -160,21 +162,28 @@ function renderResults() {
   const selected = data.languages.filter(language => enabled.has(language.code));
   if (enabled.has("sci")) selected.unshift(SCIENTIFIC);
   const query = q.value;
-  const hits = rank(query).slice(0, 8);
-  results.innerHTML = hits.map(hit => {
+  // One tier below the best hit: a strong prefix match should not hide the
+  // suffix matches just underneath it. Two characters is the minimum where
+  // that still produces a list worth reading.
+  const hits = rank(query);
+  const shown = fold(query).length < 2 || !hits.length
+    ? []
+    : hits.filter(hit => hit.tier >= hits[0].tier / 10);
+  results.innerHTML = shown.map(hit => {
     const rows = selected.map(language => {
       const name = language.code === "sci" ? hit.bird.scientific : hit.bird.names[language.code];
       if (!name) return "";
       const matched = language.code === hit.code;
-      const shown = matched
+      const label = matched
         ? `<span class="matched">${markedName(name, query)}</span>`
         : escapeHtml(name);
       const scientific = language.code === "sci" ? " scientific" : "";
-      return `<div class="row${scientific}"><span class="lang"><span>${language.short}</span></span><span class="name">${shown}</span></div>`;
+      return `<div class="row${scientific}"><span class="lang"><span>${language.short}</span></span><span class="name">${label}</span></div>`;
     }).join("");
     return `<article class="bird"><div class="bird-inner">${rows}</div></article>`;
   }).join("");
-  if (!hits.length) results.innerHTML = '<p class="hint">No matches.</p>';
+  if (!shown.length && fold(query).length < 2) results.innerHTML = '<p class="hint">Keep typing…</p>';
+  else if (!shown.length) results.innerHTML = '<p class="hint">No matches.</p>';
 }
 
 function renderLanguages() {
