@@ -40,19 +40,13 @@ function isAndroid() {
   return /Android/i.test(navigator.userAgent);
 }
 
-function isFirefox() {
-  return /Firefox|FxiOS/i.test(navigator.userAgent);
-}
-
 function showInstallHelp() {
   const android = isAndroid();
   installInstructions.textContent = isIos()
     ? "Open Birdname in Safari, tap Share, then Add to Home Screen."
-    : isFirefox()
-      ? "Firefox does not install web apps. Open birdname.fyhn.lol in Chrome or Edge and choose Install app."
-      : android
-        ? "Open the browser menu (⋮), then choose Install app or Add to Home screen."
-        : "Choose Install Birdname from your browser’s address bar or menu.";
+    : android
+      ? "Open the browser menu (⋮), then choose Install app or Add to Home screen."
+      : "Choose Install Birdname from your browser’s address bar or menu.";
   installDialog.showModal();
 }
 
