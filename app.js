@@ -55,8 +55,17 @@ function installDismissed() {
   try { return localStorage.getItem("bn-install-dismissed") === "1"; } catch { return false; }
 }
 
+function installAccepted() {
+  try { return localStorage.getItem("bn-installed") === "1"; } catch { return false; }
+}
+
+function markInstalled() {
+  appInstalled = true;
+  try { localStorage.setItem("bn-installed", "1"); } catch {}
+}
+
 function updateInstallButton() {
-  installBanner.hidden = appInstalled || isInstalled() || installDismissed() || !(deferredInstallPrompt || isIos() || isAndroid());
+  installBanner.hidden = appInstalled || installAccepted() || isInstalled() || installDismissed() || !(deferredInstallPrompt || isIos() || isAndroid());
 }
 
 updateInstallButton();
@@ -67,7 +76,7 @@ window.addEventListener("beforeinstallprompt", event => {
 });
 window.addEventListener("appinstalled", () => {
   deferredInstallPrompt = null;
-  appInstalled = true;
+  markInstalled();
   updateInstallButton();
 });
 installButton.addEventListener("click", async () => {
@@ -80,7 +89,7 @@ installButton.addEventListener("click", async () => {
   try {
     await prompt.prompt();
     const { outcome } = await prompt.userChoice;
-    if (outcome === "accepted") appInstalled = true;
+    if (outcome === "accepted") markInstalled();
     updateInstallButton();
     if (outcome !== "accepted") showInstallHelp();
   } catch {
