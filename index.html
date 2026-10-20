@@ -13,7 +13,7 @@
   <style>
     :root {
       --surface: #fff;
-      --background: #EEF1F0;
+      --background: #FFFFFF;
       --on-surface: #1C2624;
       --on-surface-variant: #6B7A76;
       --outline: #CBD3D0;
@@ -68,7 +68,7 @@
     #clear.show { visibility: visible; }
     /* Icon size knob: adjust --lang-icon to resize the language button artwork. */
     #languages-button { width: calc(var(--lang-icon) + 12px); height: 44px; padding: 4px; }
-    #languages-button img { display: block; width: var(--lang-icon); height: var(--lang-icon); }
+    #languages-button img { display: block; width: var(--lang-icon); height: var(--lang-icon); filter: invert(1); }
     main { background: var(--background); padding-bottom: env(safe-area-inset-bottom); }
     /* A broad query can match all ~900 birds. Skipping offscreen rows keeps each
        keystroke fast; browsers without support just render the whole list. */
@@ -113,7 +113,7 @@
     <div class="bar">
       <div class="searchbox">
         <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 4.2 4.2"></path></svg>
-        <input id="q" type="search" autocomplete="off" autocapitalize="none" spellcheck="false" autofocus aria-label="Search bird names">
+        <input id="q" type="search" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="🦆 ..." autofocus aria-label="Search bird names">
         <button id="clear" type="button" title="Clear" aria-label="Clear search">×</button>
       </div>
       <button id="languages-button" type="button" title="Languages" aria-label="Choose languages" aria-pressed="false">
