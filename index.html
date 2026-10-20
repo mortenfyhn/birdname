@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#ffffff">
+  <meta name="theme-color" content="#5B7A2B">
   <meta name="description" content="Fast offline bird-name lookup across European languages.">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
@@ -13,6 +13,7 @@
   <style>
     :root {
       --surface: #fff;
+      --background: #EEF1F0;
       --on-surface: #1C2624;
       --on-surface-variant: #6B7A76;
       --outline: #CBD3D0;
@@ -23,17 +24,16 @@
       --lang-icon: 48px;
       font-family: system-ui, sans-serif;
       color: var(--on-surface);
-      background: var(--surface);
+      background: var(--background);
       font-synthesis: none;
     }
     * { box-sizing: border-box; }
     /* Reserve the scrollbar so the toolbar keeps its width when the picker
        (which scrolls) replaces the results list (which may not). */
     html { scrollbar-gutter: stable; }
-    body { margin: 0; min-height: 100vh; background: var(--surface); font-size: 16px; }
+    body { margin: 0; min-height: 100vh; background: var(--background); font-size: 16px; }
     header {
-      background: var(--surface);
-      border-bottom: 1px solid var(--outline-faint);
+      background: var(--primary);
       position: sticky; top: 0; z-index: 1;
       padding-top: env(safe-area-inset-top);
     }
@@ -69,7 +69,7 @@
     /* Icon size knob: adjust --lang-icon to resize the language button artwork. */
     #languages-button { width: calc(var(--lang-icon) + 12px); height: 44px; padding: 4px; }
     #languages-button img { display: block; width: var(--lang-icon); height: var(--lang-icon); }
-    main { background: var(--surface); padding-bottom: env(safe-area-inset-bottom); }
+    main { background: var(--background); padding-bottom: env(safe-area-inset-bottom); }
     /* A broad query can match all ~900 birds. Skipping offscreen rows keeps each
        keystroke fast; browsers without support just render the whole list. */
     .bird {
